@@ -22,7 +22,7 @@ export class App extends Component {
   };
 
   componentDidMount() {
-    const savedContacts = localStorage.load('contacts') ?? CONTACTS;
+    const savedContacts = localStorage.load('contacts') ?? CONTACTS; //якщо null, то повертаємо дефолтний масив
     this.setState({ contacts: savedContacts });
   }
 
