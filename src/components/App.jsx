@@ -65,7 +65,7 @@ export const App = () => {
         Phonebook
       </Title>
       <ContactForm onFormSubmit={formSubmitHendler} />
-      {/* отримуємо фіналні дані на момент submit-y */}
+      {/* отримуємо фінальні дані на момент submit-y */}
       <Title fontSize={24} mb={3} as="h2">
         Contacts
       </Title>
