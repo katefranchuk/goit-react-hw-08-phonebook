@@ -1,5 +1,4 @@
 import { nanoid } from 'nanoid';
-import { Component } from 'react';
 import localStorage from 'service/localStorage';
 import { Box } from './StyledSystem/Box';
 import { ContactForm } from './ContactForm/ContactForm';
@@ -7,6 +6,7 @@ import { ContactList } from './ContactList/ContactList';
 import { Filter } from './Filter/Filter';
 import { Title } from './StyledSystem/Title';
 import { capitalizeFirstLetter } from './utils/capitalizeFirstLetter';
+import { useEffect, useState } from 'react';
 
 const CONTACTS = [
   { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
@@ -15,83 +15,65 @@ const CONTACTS = [
   { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
 ];
 
-export class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
+export const App = () => {
+  const [contacts, setContacts] = useState(
+    localStorage.load('contacts') ?? CONTACTS
+  ); //якщо null, то повертаємо дефолтний масив
+  const [filter, setFilter] = useState('');
 
-  componentDidMount() {
-    const savedContacts = localStorage.load('contacts') ?? CONTACTS; //якщо null, то повертаємо дефолтний масив
-    this.setState({ contacts: savedContacts });
-  }
+  useEffect(() => {
+    localStorage.save('contacts', contacts); // при зміні contacts оновлюємо localStorage
+  }, [contacts]);
 
-  componentDidUpdate(_, prevState) {
-    if (prevState.contact !== this.state.contacts) {
-      localStorage.save('contacts', this.state.contacts);
-    }
-  }
-
-  formSubmitHendler = data => {
+  const formSubmitHendler = data => {
     const { name, number } = data;
     // уникаємо мутації початкового стану
     const normalizedContactName = name.toLowerCase();
     const capitalizedContactName = capitalizeFirstLetter(name);
 
-    this.setState(({ contacts }) =>
-      contacts.some(
-        contact => contact.name.toLowerCase() === normalizedContactName
-      )
-        ? alert(`${capitalizedContactName} is already in contacts`)
-        : {
-            contacts: [
-              ...contacts,
-              { id: nanoid(), name: capitalizedContactName, number },
-            ],
-          }
-    );
+    contacts.some(
+      contact => contact.name.toLowerCase() === normalizedContactName
+    )
+      ? alert(`${capitalizedContactName} is already in contacts`)
+      : setContacts([
+          ...contacts,
+          { id: nanoid(), name: capitalizedContactName, number },
+        ]);
   };
 
-  handleFilterChange = event => {
+  const handleFilterChange = event => {
     const { value } = event.currentTarget;
-    this.setState({ filter: value });
+    setFilter(value);
   };
 
-  getFilteredContacts = () => {
-    const { contacts, filter } = this.state;
+  const getFilteredContacts = () => {
     const normalizedFilter = filter.toLowerCase();
     return contacts.filter(contact =>
       contact.name.toLowerCase().includes(normalizedFilter)
     );
   };
 
-  deleteContact = contactID => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(({ id }) => id !== contactID),
-    }));
+  const deleteContact = contactID => {
+    setContacts(prevState => prevState.filter(({ id }) => id !== contactID));
   };
 
-  render() {
-    const { filter } = this.state;
+  const filteredContacts = getFilteredContacts();
 
-    const filteredContacts = this.getFilteredContacts();
-
-    return (
-      <Box p={4} as="section">
-        <Title fontSize={32} mb={3} as="h1">
-          Phonebook
-        </Title>
-        <ContactForm onFormSubmit={this.formSubmitHendler} />
-        {/* отримуємо фіналні дані на момент submit-y */}
-        <Title fontSize={24} mb={3} as="h2">
-          Contacts
-        </Title>
-        <Filter filterValue={filter} onInputChange={this.handleFilterChange} />
-        <ContactList
-          contacts={filteredContacts}
-          onDeleteContact={this.deleteContact}
-        />
-      </Box>
-    );
-  }
-}
+  return (
+    <Box p={4} as="section">
+      <Title fontSize={32} mb={3} as="h1">
+        Phonebook
+      </Title>
+      <ContactForm onFormSubmit={formSubmitHendler} />
+      {/* отримуємо фіналні дані на момент submit-y */}
+      <Title fontSize={24} mb={3} as="h2">
+        Contacts
+      </Title>
+      <Filter filterValue={filter} onInputChange={handleFilterChange} />
+      <ContactList
+        contacts={filteredContacts}
+        onDeleteContact={deleteContact}
+      />
+    </Box>
+  );
+};
