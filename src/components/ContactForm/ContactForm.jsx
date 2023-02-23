@@ -1,24 +1,40 @@
-import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
 import { useState } from 'react';
 import { Form, FormLabel, FormInput, FormButton } from './ContactForm.styled';
+import { addContact } from 'redux/contactsSlice';
+import { nanoid } from 'nanoid';
+import { capitalizeFirstLetter } from 'components/utils/capitalizeFirstLetter';
+import { selectContacts } from 'redux/selectors';
 
-export const ContactForm = ({ onFormSubmit }) => {
+export const ContactForm = () => {
   const [userData, setUserData] = useState({
     name: '',
     number: '',
   });
 
+  const contacts = useSelector(selectContacts);
+  const dispatch = useDispatch();
+
   const handleChange = event => {
     const { name, value } = event.currentTarget;
-
     setUserData({ ...userData, [name]: value });
   };
 
   const handleSubmit = event => {
     event.preventDefault();
+    const capitalizedContactName = capitalizeFirstLetter(userData.name);
 
-    onFormSubmit(userData);
+    const isExist = contacts.some(
+      contact => contact.name.toLowerCase() === userData.name.toLowerCase()
+    );
+    if (isExist) {
+      alert(`${capitalizedContactName} is already in contacts`);
+      return;
+    }
 
+    dispatch(
+      addContact({ ...userData, name: capitalizedContactName, id: nanoid() })
+    );
     formReset();
   };
 
@@ -55,8 +71,4 @@ export const ContactForm = ({ onFormSubmit }) => {
       <FormButton type="submit">Add contact</FormButton>
     </Form>
   );
-};
-
-ContactForm.propTypes = {
-  onFormSubmit: PropTypes.func,
 };
