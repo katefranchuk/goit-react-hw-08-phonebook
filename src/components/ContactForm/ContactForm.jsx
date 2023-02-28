@@ -1,10 +1,11 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { useState } from 'react';
 import { Form, FormLabel, FormInput, FormButton } from './ContactForm.styled';
-import { addContact } from 'redux/contactsSlice';
+
 import { nanoid } from 'nanoid';
 import { capitalizeFirstLetter } from 'components/utils/capitalizeFirstLetter';
 import { selectContacts } from 'redux/selectors';
+import { addContact } from 'redux/operations';
 
 export const ContactForm = () => {
   const [userData, setUserData] = useState({
@@ -31,10 +32,12 @@ export const ContactForm = () => {
       alert(`${capitalizedContactName} is already in contacts`);
       return;
     }
-
     dispatch(
       addContact({ ...userData, name: capitalizedContactName, id: nanoid() })
     );
+    // dispatch(
+    //   addContact({  name: capitalizedContactName, id: nanoid() })
+    // );
     formReset();
   };
 
@@ -61,7 +64,7 @@ export const ContactForm = () => {
       <FormInput
         value={number}
         onChange={handleChange}
-        placeholder="459-12-56"
+        placeholder="385-928-7370"
         type="tel"
         name="number"
         pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"

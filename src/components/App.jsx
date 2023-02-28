@@ -3,11 +3,20 @@ import { ContactForm } from './ContactForm/ContactForm';
 import { ContactList } from './ContactList/ContactList';
 import { Filter } from './Filter/Filter';
 import { Title } from './StyledSystem/Title';
-import { selectContacts } from 'redux/selectors';
-import { useSelector } from 'react-redux';
+import { selectContacts, selectLoading } from 'redux/selectors';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
+import { getContacts } from 'redux/operations';
+import { Loader } from './Loader/Loader';
 
 export const App = () => {
   const contacts = useSelector(selectContacts);
+  const loading = useSelector(selectLoading);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getContacts());
+  }, [dispatch]);
 
   return (
     <Box p={4} as="section">
@@ -18,13 +27,19 @@ export const App = () => {
       <Title fontSize={24} mb={3} as="h2">
         Contacts
       </Title>
-      {contacts.length !== 0 ? (
-        <>
-          <Filter />
-          <ContactList />
-        </>
+      {loading ? (
+        <Loader />
       ) : (
-        <p>There ara no contacts.</p>
+        <>
+          {contacts.length !== 0 ? (
+            <>
+              <Filter />
+              <ContactList />
+            </>
+          ) : (
+            <p>There ara no contacts.</p>
+          )}
+        </>
       )}
     </Box>
   );
