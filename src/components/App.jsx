@@ -1,46 +1,65 @@
-import { Box } from './StyledSystem/Box';
-import { ContactForm } from './ContactForm/ContactForm';
-import { ContactList } from './ContactList/ContactList';
-import { Filter } from './Filter/Filter';
-import { Title } from './StyledSystem/Title';
-import { selectContacts, selectLoading } from 'redux/selectors';
-import { useDispatch, useSelector } from 'react-redux';
-import { useEffect } from 'react';
-import { getContacts } from 'redux/operations';
-import { Loader } from './Loader/Loader';
+import { useEffect, lazy } from 'react';
+import { useDispatch } from 'react-redux';
+
+import { Routes, Route } from 'react-router-dom';
+import { SharedLayout } from 'Layout/SharedLayout';
+import { PrivateRoute } from 'routes/PrivateRoute';
+import { RestrictedRoute } from 'routes/RestrictedRoute';
+import { refreshUser } from 'redux/auth/authOperations';
+import { useAuth } from 'hooks/useAuth';
+import { Title } from 'styledSystem/Title';
+
+const HomePage = lazy(() => import('../pages/HomePage'));
+const SignInPage = lazy(() => import('../pages/SignInPage'));
+const LogInPage = lazy(() => import('../pages/LogInPage'));
+const ContactsPage = lazy(() => import('../pages/ContactsPage'));
 
 export const App = () => {
-  const contacts = useSelector(selectContacts);
-  const loading = useSelector(selectLoading);
   const dispatch = useDispatch();
+  const { isRefreshing, token } = useAuth();
 
   useEffect(() => {
-    dispatch(getContacts());
-  }, [dispatch]);
+    if (!token) return;
+    dispatch(refreshUser());
+  }, [dispatch, token]);
 
-  return (
-    <Box p={4} as="section">
-      <Title fontSize={32} mb={3} as="h1">
-        Phonebook
-      </Title>
-      <ContactForm />
-      <Title fontSize={24} mb={3} as="h2">
-        Contacts
-      </Title>
-      {loading ? (
-        <Loader />
-      ) : (
-        <>
-          {contacts.length !== 0 ? (
-            <>
-              <Filter />
-              <ContactList />
-            </>
-          ) : (
-            <p>There ara no contacts.</p>
-          )}
-        </>
-      )}
-    </Box>
+  return isRefreshing ? (
+    <Title
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      height={`100vh`}
+      fontSize={32}
+      fontWeight="bold"
+    >
+      Refreshing user...
+    </Title>
+  ) : (
+    <Routes>
+      <Route path="/" element={<SharedLayout />}>
+        <Route index element={<HomePage />} />
+        <Route
+          path="register"
+          element={
+            <RestrictedRoute
+              redirectTo="/contacts"
+              component={<SignInPage />}
+            />
+          }
+        />
+        <Route
+          path="login"
+          element={
+            <RestrictedRoute redirectTo="/contacts" component={<LogInPage />} />
+          }
+        />
+        <Route
+          path="contacts"
+          element={
+            <PrivateRoute redirectTo="/login" component={<ContactsPage />} />
+          }
+        />
+      </Route>
+    </Routes>
   );
 };

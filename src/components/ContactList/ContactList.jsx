@@ -4,20 +4,20 @@ import {
   ContactListButton,
 } from './ContactList.styled';
 
-import { useDispatch, useSelector } from 'react-redux';
-import { getFilteredContacts, selectLoading } from 'redux/selectors';
+import { useDispatch } from 'react-redux';
+
 import { Loader } from 'components/Loader/Loader';
-import { deleteContact } from 'redux/operations';
+import { deleteContact } from 'redux/contacts/contactsOperations';
+import { useContacts } from 'hooks/useContacts';
 
 export const ContactList = () => {
-  const contacts = useSelector(getFilteredContacts);
-  const loading = useSelector(selectLoading);
+  const { isLoading, contacts } = useContacts();
   const dispatch = useDispatch();
 
   if (!contacts.length) return;
   return (
     <>
-      {loading ? (
+      {isLoading ? (
         <Loader />
       ) : (
         <ContactListEl>

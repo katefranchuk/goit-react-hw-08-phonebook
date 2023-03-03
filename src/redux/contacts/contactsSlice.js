@@ -1,5 +1,5 @@
 import { createSlice, isAnyOf } from '@reduxjs/toolkit';
-import { getContacts, addContact, deleteContact } from './operations';
+import { getContacts, addContact, deleteContact } from './contactsOperations';
 
 const initialState = {
   items: [],
@@ -10,9 +10,7 @@ const initialState = {
 
 const contactsSlice = createSlice({
   name: 'contacts',
-
   initialState,
-
   reducers: {
     setFilter(state, action) {
       state.filter = action.payload;
